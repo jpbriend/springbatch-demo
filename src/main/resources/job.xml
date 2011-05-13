@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-2.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <job id="example1" xmlns="http://www.springframework.org/schema/batch">
+        <step id="announceStep" next="processFile">
+			<tasklet ref="announce" method="announce" />
+		</step>
+        <step id="processFile">
+            <tasklet transaction-manager="transactionManager">
+                <chunk reader="userFileItemReader" writer="itemWriter" commit-interval="1"/>
+            </tasklet>
+        </step>
+    </job>
+
+    <bean id="announce" class="fr.infinit.demo.springbatch.service.AnnounceService" />
+
+    <bean id="userFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader">
+		<property name="resource" value="classpath:input.txt" />
+		<property name="lineMapper">
+			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+				<property name="lineTokenizer">
+					<bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+						<property name="names" value="ID,firstName,lastName,birthday" />
+					</bean>
+				</property>
+				<property name="fieldSetMapper">
+					<bean class="fr.infinit.demo.springbatch.batch.UserFieldMapper" />
+				</property>
+			</bean>
+		</property>
+	</bean>
+
+    <bean id="itemWriter" class="org.springframework.batch.item.file.FlatFileItemWriter">
+        <property name="resource" value="file:/Users/mudak/dev/workspace/SpringBatch/output.txt" />
+        <property name="lineAggregator">
+            <bean class="org.springframework.batch.item.file.transform.DelimitedLineAggregator">
+                <property name="delimiter" value="|"/>
+                <property name="fieldExtractor">
+                    <bean class="org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor">
+                        <property name="names" value="firstName"/>
+                    </bean>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+
+</beans>
