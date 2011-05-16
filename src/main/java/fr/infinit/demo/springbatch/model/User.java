@@ -1,5 +1,8 @@
 package fr.infinit.demo.springbatch.model;
 
+
+import javax.persistence.*;
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -7,7 +10,13 @@ import java.util.Date;
  * Date: 5/12/11
  * Time: 8:41 PM
  */
-public class User {
+@Entity
+@Table(name="Utilisateurs")
+public class User implements Serializable {
+
+    @Id
+    @GeneratedValue(strategy= GenerationType.AUTO)
+    private Long identifier;
 
     private int id;
     private String firstName;
@@ -48,5 +57,13 @@ public class User {
 
     public void setBirthday(Date birthday) {
         this.birthday = birthday;
+    }
+
+    public Long getIdentifier() {
+        return identifier;
+    }
+
+    public void setIdentifier(Long identifier) {
+        this.identifier = identifier;
     }
 }

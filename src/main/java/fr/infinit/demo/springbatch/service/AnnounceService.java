@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
  * Date: 5/12/11
  * Time: 10:15 PM
  */
-@Service
+@Service("announce")
 public class AnnounceService {
 
     @InjectLogger

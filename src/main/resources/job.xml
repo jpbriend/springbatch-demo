@@ -1,25 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:aop="http://www.springframework.org/schema/aop"
-	xmlns:p="http://www.springframework.org/schema/p"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
-		http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-2.1.xsd
-		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+	xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch-2.1.xsd
+		                http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
+    <!-- Job Example 1 -->
     <job id="example1" xmlns="http://www.springframework.org/schema/batch">
+
+        <step id="clean" next="announceStep">
+            <tasklet ref="cleanTasklet" />
+        </step>
+
         <step id="announceStep" next="processFile">
 			<tasklet ref="announce" method="announce" />
 		</step>
+
         <step id="processFile">
-            <tasklet transaction-manager="transactionManager">
+            <tasklet transaction-manager="transactionManager" task-executor="taskExecutor">
                 <chunk reader="userFileItemReader" writer="itemWriter" commit-interval="1"/>
             </tasklet>
         </step>
     </job>
 
-    <bean id="announce" class="fr.infinit.demo.springbatch.service.AnnounceService" />
+    <!-- Tasklet -->
+    <bean id="cleanTasklet" class="fr.infinit.demo.springbatch.batch.CleanTasklet" />
 
+    <!-- ItemReader -->
     <bean id="userFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader">
 		<property name="resource" value="classpath:input.txt" />
 		<property name="lineMapper">
@@ -36,6 +42,7 @@
 		</property>
 	</bean>
 
+    <!-- ItemWriter -->
     <bean id="itemWriter" class="org.springframework.batch.item.file.FlatFileItemWriter">
         <property name="resource" value="file:/Users/mudak/dev/workspace/SpringBatch/output.txt" />
         <property name="lineAggregator">
@@ -50,5 +57,10 @@
         </property>
     </bean>
 
+    <!-- TaskExecutor -->
+    <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="maxPoolSize" value="1" />
+        <property name="corePoolSize" value="1" />
+    </bean>
 
 </beans>

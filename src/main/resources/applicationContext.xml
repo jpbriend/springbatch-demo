@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:p="http://www.springframework.org/schema/p" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:p="http://www.springframework.org/schema/p"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:context="http://www.springframework.org/schema/context"
 	xsi:schemaLocation="
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
-		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd
-		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd">
+		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-2.5.xsd">
 
     <import resource="job.xml" />
     <import resource="classpath:context/applicationContext-spring-log.xml" />
+    <context:component-scan base-package="fr.infinit.demo"/>
 
     <bean id="jobLauncher"
 		class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
@@ -20,8 +23,54 @@
 		<property name="transactionManager" ref="transactionManager" />
 	</bean>
 
-    <bean id="transactionManager"
-		class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" >
+    <!-- H2 -->
+    <bean id = "org.h2.tools.Server"
+          class="org.h2.tools.Server"
+          factory-method="createTcpServer"
+          init-method="start"
+          destroy-method="stop">
+        <constructor-arg value="-tcp,-tcpAllowOthers,true,-tcpPort,9092" />
+    </bean>
+
+     <bean  id="org.h2.tools.Server-WebServer"
+            class="org.h2.tools.Server"
+            scope="singleton"
+            factory-method="createWebServer"
+            init-method="start">
+            <constructor-arg value="-web,-webAllowOthers,true,-webPort,8082"/>
+     </bean>
+
+    <!-- Data -->
+    <bean id="c3p0dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="org.h2.Driver"/>
+        <property name="jdbcUrl" value="jdbc:h2:mem:"/>
+        <property name="user" value="sa"/>
+        <property name="password" value=""/>
+        <property name="minPoolSize" value="1" />
+        <property name="maxPoolSize" value="10" />
+    </bean>
+
+    <bean id="sessionFactory" class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+		<property name="dataSource" ref="c3p0dataSource" />
+        <property name="annotatedClasses">
+            <list>
+                <value>fr.infinit.demo.springbatch.model.User</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <value>
+                hibernate.dialect=org.hibernate.dialect.H2Dialect
+                hibernate.hbm2ddl.auto=create-drop
+                hibernate.show_sql=true
+                hibernate.cache.use_second_level_cache=false
+                hibernate.cache.use_query_cache=false
+            </value>
+        </property>
+	</bean>
+
+
+	<bean id="transactionManager" class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+		<property name="sessionFactory" ref="sessionFactory" />
 	</bean>
 
 </beans>
