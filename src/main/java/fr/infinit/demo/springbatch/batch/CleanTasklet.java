@@ -1,6 +1,6 @@
 package fr.infinit.demo.springbatch.batch;
 
-import com.excilys.utils.spring.log.slf4j.InjectLogger;
+import com.excilys.ebi.utils.spring.log.slf4j.InjectLogger;
 import org.slf4j.Logger;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
