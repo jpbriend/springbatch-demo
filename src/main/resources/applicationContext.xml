@@ -29,7 +29,7 @@
           factory-method="createTcpServer"
           init-method="start"
           destroy-method="stop">
-        <constructor-arg value="-tcp,-tcpAllowOthers,true,-tcpPort,9092" />
+        <constructor-arg value="-tcp,-tcpAllowOthers,true,-tcpPort,9092,-webAllowOthers,false" />
     </bean>
 
      <bean  id="org.h2.tools.Server-WebServer"
@@ -37,7 +37,7 @@
             scope="singleton"
             factory-method="createWebServer"
             init-method="start">
-            <constructor-arg value="-web,-webAllowOthers,true,-webPort,8082"/>
+            <constructor-arg value="-web,-webAllowOthers,true,-webPort,8082,-webAllowOthers,false"/>
      </bean>
 
     <!-- Data -->
